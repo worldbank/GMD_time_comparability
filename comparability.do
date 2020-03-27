@@ -54,6 +54,9 @@ replace datatype = cond(lower(datatype) == "i", "2", "1")
 keep countrycode year survname coveragetype datatype comparability
 sort countrycode year coveragetype coveragetype
 
+save "data/povcalnet_comparability.dta"
+export delimited using "data/povcalnet_comparability.csv", replace
+
 
 exit
 
