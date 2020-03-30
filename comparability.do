@@ -15,6 +15,8 @@ Output:
 // Load latest data on datalibweb
 //========================================================
 
+*##s
+drop _all
 if ("`cpivin'" == "") {
 	local cpipath "c:\ado\personal\Datalibweb\data\GMD\SUPPORT\SUPPORT_2005_CPI"
 	local cpidirs: dir "`cpipath'" dirs "*CPI_*_M"
@@ -49,13 +51,31 @@ replace coveragetype = 4 if inlist(countrycode, "IND", "IDN", "CHN")  /*
 
 * Data type
 replace datatype = cond(lower(datatype) == "i", "2", "1")
+destring datatype, replace
+
+
+* Manual cases
+keep if !(countrycode == "BRA" & survname == "PNAD" & inrange(year, 2012, 2015))
+keep if !(countrycode == "GEO" & survname == "SGH"  & year  == 1997)
+keep if !(countrycode == "RUS" & survname == "RLMS"  & year  == 2001)
 
 
 keep countrycode year survname coveragetype datatype comparability
 sort countrycode year coveragetype coveragetype
 
-save "data/povcalnet_comparability.dta"
-export delimited using "data/povcalnet_comparability.csv", replace
+* save "data/povcalnet_comparability.dta"
+* export delimited using "data/povcalnet_comparability.csv", replace
+
+
+
+
+tempfile metadata
+save `metadata'
+
+
+povcalnet, clear
+merge 1:1 countrycode year coveragetype datatype using "`metadata'"
+*##e
 
 
 exit
@@ -68,4 +88,3 @@ Notes:
 1.
 2.
 3.
-
