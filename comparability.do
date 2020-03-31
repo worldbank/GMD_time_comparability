@@ -59,13 +59,44 @@ keep if !(countrycode == "BRA" & survname == "PNAD" & inrange(year, 2012, 2015))
 keep if !(countrycode == "GEO" & survname == "SGH"  & year  == 1997)
 keep if !(countrycode == "RUS" & survname == "RLMS"  & year  == 2001)
 
+// fix for EU-SILC countries. 
+replace year = year - 1 if survname == "EU-SILC"
+replace year = year - 1 if survname == "SILC-C"
+
+// Armonise coveragetypes 
+replace coveragetype = 3 if countrycode == "URY" & year <= 2005
+replace coveragetype = 3 if countrycode == "BOL" & year == 1992 // Unsure of this one
+replace coveragetype = 2 if countrycode == "ECU" & year == 1998 // Unsure of this one
+
+// Hardcoded cleaning
+replace year = year - 1 if countrycode == "MYS" & year >= 2009
+replace year = year - 1 if countrycode == "TZA" & year == 2018
+replace year = 2014 if     countrycode == "COM" & year == 2013
+
+
+// countries with income and consumption
+tempvar exp 
+expand 2 if countrycode  == "PHL" & year >= 2000, gen(`exp')
+replace datatype = 2 if `exp' == 1 
+
+tempvar exp 
+expand 2 if countrycode  == "MEX" & year >= 1992, gen(`exp')
+replace datatype = 1 if `exp' == 1
+
+tempvar exp 
+expand 2 if countrycode  == "NIC", gen(`exp')
+replace datatype = 1 if `exp' == 1
+
+tempvar exp 
+expand 2 if countrycode  == "HTI" & year == 2012 , gen(`exp')
+replace datatype = 2 if `exp' == 1
 
 keep countrycode year survname coveragetype datatype comparability
 sort countrycode year coveragetype coveragetype
 
+
 * save "data/povcalnet_comparability.dta"
 * export delimited using "data/povcalnet_comparability.csv", replace
-
 
 
 
@@ -75,7 +106,7 @@ save `metadata'
 
 povcalnet, clear
 merge 1:1 countrycode year coveragetype datatype using "`metadata'"
-*##e
+drop if _merge == 2
 
 
 exit
