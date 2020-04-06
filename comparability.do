@@ -16,6 +16,12 @@ Output:
 //========================================================
 
 *##s
+
+if (lower("`c(username)'") == "wb384996") {
+	cd "c:\Users\wb384996\OneDrive - WBG\WorldBank\DECDG\PovcalNet Team\GMD_time_comparability"
+}
+
+
 drop _all
 if ("`cpivin'" == "") {
 	local cpipath "c:\ado\personal\Datalibweb\data\GMD\SUPPORT\SUPPORT_2005_CPI"
@@ -94,10 +100,8 @@ replace datatype = 2 if `exp' == 1
 keep countrycode year survname coveragetype datatype comparability
 sort countrycode year coveragetype coveragetype
 
-
-* save "data/povcalnet_comparability.dta"
-* export delimited using "data/povcalnet_comparability.csv", replace
-
+save "data/povcalnet_comparability.dta", replace
+export delimited using "data/povcalnet_comparability.csv", replace
 
 
 tempfile metadata
