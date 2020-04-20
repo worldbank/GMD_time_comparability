@@ -20,6 +20,9 @@ Output:
 if (lower("`c(username)'") == "wb384996") {
 	cd "c:\Users\wb384996\OneDrive - WBG\WorldBank\DECDG\PovcalNet Team\GMD_time_comparability"
 }
+if (lower("`c(username)'") == "wb562350") {
+	cd "C:\Users\wb562350\OneDrive - WBG\Documents\Git\Research\GMD_time_comparability"
+}
 
 
 drop _all
@@ -100,18 +103,28 @@ replace datatype = 2 if `exp' == 1
 keep countrycode year survname coveragetype datatype comparability
 sort countrycode year coveragetype coveragetype
 
+* Only keep those reported on povcalnet
+preserve 
+povcalnet, clear
+keep countrycode year coveragetype datatype
+tempfile pcn
+save `pcn'
+restore
+
+merge 1:1 countrycode year coveragetype datatype using `pcn', keep(3) nogen
+
 save "data/povcalnet_comparability.dta", replace
 export delimited using "data/povcalnet_comparability.csv", replace
 
+/*/ Final check 
 
 tempfile metadata
 save `metadata'
 
-
 povcalnet, clear
 merge 1:1 countrycode year coveragetype datatype using "`metadata'"
 drop if _merge == 2
-
+*/
 
 exit
 
