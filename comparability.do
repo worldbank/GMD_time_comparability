@@ -21,7 +21,7 @@ if (lower("`c(username)'") == "wb384996") {
 	cd "c:\Users\wb384996\OneDrive - WBG\WorldBank\DECDG\PovcalNet Team\GMD_time_comparability"
 }
 if (lower("`c(username)'") == "wb562350") {
-	cd "C:\Users\wb562350\OneDrive - WBG\Documents\Git\Research\GMD_time_comparability"
+	cd "C:\Users\wb562350\OneDrive - WBG\Documents\Git\povcalnet\GMD_time_comparability"
 }
 
 
@@ -112,6 +112,9 @@ save `pcn'
 restore
 
 merge 1:1 countrycode year coveragetype datatype using `pcn', keep(3) nogen
+
+// final change for IND 1977
+replace comparability = 1 if year == 1997 & countrycode == "IND"
 
 save "data/povcalnet_comparability.dta", replace
 export delimited using "data/povcalnet_comparability.csv", replace
