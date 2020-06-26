@@ -21,7 +21,7 @@ if (lower("`c(username)'") == "wb384996") {
 	cd "c:\Users\wb384996\OneDrive - WBG\WorldBank\DECDG\PovcalNet Team\GMD_time_comparability"
 }
 if (lower("`c(username)'") == "wb562350") {
-	cd "C:\Users\wb562350\OneDrive - WBG\Documents\Git\Research\GMD_time_comparability"
+	cd "C:\Users\wb562350\OneDrive - WBG\Documents\Git\povcalnet\GMD_time_comparability"
 }
 
 
