@@ -114,24 +114,26 @@ restore
 merge 1:1 countrycode year coveragetype datatype using `pcn', keep(3) nogen
 
 // final change for IND 
-count if year == 1997 & countrycode == "IND" 
+count if year == 1977 & countrycode == "IND" 
 if (r(N) == 0){
+	replace comparability = comparability + 1 if countrycode == "IND"
 	foreach c in 1 2 4{
 		set obs `=_N + 1'
 		replace countrycode = "IND" in L
 		replace year = 1977 in L
 		replace datatype = 1 in L
 		replace survname = "NSS" in L
-		replace comparability = 1 in L
+		replace comparability = 0 in L
 		replace coveragetype = `c' in L
 	}
+
 }
 
 sort countrycode year coveragetype coveragetype
 
 save "data/povcalnet_comparability.dta", replace
 export delimited using "data/povcalnet_comparability.csv", replace
-
+/*
 /*/ Final check 
 
 tempfile metadata
