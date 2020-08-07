@@ -105,7 +105,7 @@ sort countrycode year coveragetype coveragetype
 
 * Only keep those reported on povcalnet
 preserve 
-povcalnet, clear
+povcalnet, clear server(int)
 keep countrycode year coveragetype datatype
 tempfile pcn
 save `pcn'
@@ -130,6 +130,8 @@ if (r(N) == 0){
 }
 
 sort countrycode year coveragetype coveragetype
+
+*##e
 
 save "data/povcalnet_comparability.dta", replace
 export delimited using "data/povcalnet_comparability.csv", replace
