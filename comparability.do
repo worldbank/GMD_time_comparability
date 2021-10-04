@@ -1,6 +1,6 @@
 /*==================================================
 project:       create comparability database
-Author:        R.Andres Castaneda
+Author:        R.Andres Castaneda And Minh Cong Nguyen
 E-email:       acastanedaa@worldbank.org
 url:
 Dependencies:  The World Bank
