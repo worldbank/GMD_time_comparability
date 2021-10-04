@@ -1,6 +1,6 @@
 /*==================================================
 project:       create comparability database
-Author:        R.Andres Castaneda
+Author:        R.Andres Castaneda And Minh Cong Nguyen
 E-email:       acastanedaa@worldbank.org
 url:
 Dependencies:  The World Bank
@@ -45,6 +45,7 @@ if wordcount("`cpivin'") == 1 {
 cap datalibweb, country(Support) year(2005) type(GMDRAW) fileserver /*
 */	surveyid(Support_2005_CPI_v`cpivin'_M) filename(Survey_price_framework.dta)
 
+
 * Country Code
 rename code countrycode
 
@@ -56,87 +57,77 @@ gen coveragetype = cond(survey_coverage == "u", 2, /*
 
 replace coveragetype = 4 if inlist(countrycode, "IND", "IDN", "CHN")  /* 
                            */ & coveragetype == 3
-
-
 * Data type
 replace datatype = cond(lower(datatype) == "i", "2", "1")
 destring datatype, replace
-
 
 * Manual cases
 keep if !(countrycode == "BRA" & survname == "PNAD" & inrange(year, 2012, 2015))
 keep if !(countrycode == "GEO" & survname == "SGH"  & year  == 1997)
 keep if !(countrycode == "RUS" & survname == "RLMS"  & year  == 2001)
 
-// fix for EU-SILC countries. 
-replace year = year - 1 if survname == "EU-SILC"
-replace year = year - 1 if survname == "SILC-C"
-
 // Armonise coveragetypes 
-replace coveragetype = 3 if countrycode == "URY" & year <= 2005
+replace coveragetype = 3 if countrycode == "URY" & year <= 2005 & year>=1992
 replace coveragetype = 3 if countrycode == "BOL" & year == 1992 // Unsure of this one
 replace coveragetype = 2 if countrycode == "ECU" & year == 1998 // Unsure of this one
 
-// Hardcoded cleaning
-replace year = year - 1 if countrycode == "MYS" & year >= 2009
-replace year = year - 1 if countrycode == "TZA" & year == 2018
-replace year = 2014 if     countrycode == "COM" & year == 2013
-
+//TZA2017/8 data
+replace rep_year = 2017 if countrycode == "TZA" & rep_year == 2018
+count
 
 // countries with income and consumption
-tempvar exp 
-expand 2 if countrycode  == "PHL" & year >= 2000, gen(`exp')
-replace datatype = 2 if `exp' == 1 
+gen exp = 1 if oth_welfare1_type~=""
+ta exp
+levelsof countrycode if exp==1, local(ctrylist)
+foreach ctry of local ctrylist {
+    expand 2 if countrycode  == "`ctry'" & exp==1, gen(tmp)
+	replace datatype = 1 if tmp==1 & lower(oth_welfare1_type)=="c" & countrycode  == "`ctry'"
+	replace datatype = 2 if tmp==1 & lower(oth_welfare1_type)=="i" & countrycode  == "`ctry'"
+	drop tmp
+}
 
-tempvar exp 
-expand 2 if countrycode  == "MEX" & year >= 1992, gen(`exp')
-replace datatype = 1 if `exp' == 1
+//expand Urban/Rural from national for CHN, IND, IDN, doing one at a time, rural and then urban
+levelsof countrycode if tosplit==1, local(ctrylist)
+foreach ctry of local ctrylist {
+    expand 2 if countrycode  == "`ctry'" & tosplit==1, gen(tmp)
+	replace coveragetype = 1 if tmp==1 & countrycode  == "`ctry'"
+	replace tosplit = . if tmp==1 & countrycode  == "`ctry'"
+	drop tmp
+	
+	expand 2 if countrycode  == "`ctry'" & tosplit==1, gen(tmp)
+	replace coveragetype = 2 if tmp==1 & countrycode  == "`ctry'"
+	replace tosplit = . if tmp==1 & countrycode  == "`ctry'"
+	drop tmp
+}
 
-tempvar exp 
-expand 2 if countrycode  == "NIC", gen(`exp')
-replace datatype = 1 if `exp' == 1
-
-tempvar exp 
-expand 2 if countrycode  == "HTI" & year == 2012 , gen(`exp')
-replace datatype = 2 if `exp' == 1
-
+ren year yearold
+ren rep_year year
 keep countrycode year survname coveragetype datatype comparability
 sort countrycode year coveragetype coveragetype
 
 * Only keep those reported on povcalnet
 preserve 
-povcalnet, clear server(int)
+povcalnet, clear 
 keep countrycode year coveragetype datatype
 tempfile pcn
 save `pcn'
 restore
 
-merge 1:1 countrycode year coveragetype datatype using `pcn', keep(3) nogen
+merge 1:1 countrycode year coveragetype datatype using `pcn', 
 
-// final change for IND 
-count if year == 1977 & countrycode == "IND" 
-if (r(N) == 0){
-	replace comparability = comparability + 1 if countrycode == "IND"
-	foreach c in 1 2 4{
-		set obs `=_N + 1'
-		replace countrycode = "IND" in L
-		replace year = 1977 in L
-		replace datatype = 1 in L
-		replace survname = "NSS" in L
-		replace comparability = 0 in L
-		replace coveragetype = `c' in L
-	}
-
-}
-
+keep if _m==3
+drop _m
 sort countrycode year coveragetype coveragetype
 
 *##e
 
 save "data/povcalnet_comparability.dta", replace
 export delimited using "data/povcalnet_comparability.csv", replace
-/*
-/*/ Final check 
+exit
+
+
+*
+/* Final check 
 
 tempfile metadata
 save `metadata'
@@ -146,7 +137,6 @@ merge 1:1 countrycode year coveragetype datatype using "`metadata'"
 drop if _merge == 2
 */
 
-exit
 
 /* End of do-file */
 
